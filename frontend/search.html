@@ -384,15 +384,27 @@
 
     <script>
         function showChat() {
-            document.getElementById("chat-container").style.display = "block";
+        document.getElementById("chat-container").style.display = "block";
+    }
+
+    function toggleChat() {
+        const chatContainer = document.getElementById("chat-container");
+        chatContainer.style.display = (chatContainer.style.display === "none" || chatContainer.style.display === "") 
+            ? "block" 
+            : "none";
+    }
+
+    // 👇 Auto open chat if redirected from dashboard
+    window.onload = function () {
+        const chatUserId = localStorage.getItem("ChatWithUserId");
+        const projectId = localStorage.getItem("ChatProjectId");
+
+        if (chatUserId && projectId) {
+            // You can use the ID to load messages here if needed
+            document.getElementById("chat-user-name").textContent = chatUserId;
+            showChat();
         }
-        function toggleChat() 
-        {
-            const chatContainer = document.getElementById("chat-container");
-            chatContainer.style.display = (chatContainer.style.display === "none" || chatContainer.style.display === "") 
-                ? "block" 
-                : "none";
-        }
+    };
     </script>
 </body>
 </html>

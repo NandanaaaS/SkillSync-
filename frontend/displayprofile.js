@@ -1,5 +1,7 @@
 import { auth, db } from "../backend/env.js";
 import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
+import { getCollaborationRequests, acceptCollaborationRequest } from "../backend/collaboration.js";
+
 
 export async function updateProfileDisplay() {
     const userId = localStorage.getItem("LoggedInUserId");
@@ -80,4 +82,58 @@ function showProjectDetails(project) {
         </button>
     `;
 }
-updateProfileDisplay();
+// Load incoming collaboration requests
+async function loadCollabRequests() {
+    const userId = localStorage.getItem("LoggedInUserId");
+    const container = document.getElementById("request-container");
+    container.innerHTML = "Loading...";
+
+    if (!userId) {
+        container.innerHTML = "User not logged in.";
+        return;
+    }
+
+    const requests = await getCollaborationRequests(userId);
+    container.innerHTML = "";
+
+    if (requests.length === 0) {
+        container.innerHTML = "<p>No collaboration requests found.</p>";
+        return;
+    }
+
+    requests.forEach(req => {
+        const item = document.createElement("div");
+        item.className = "request-item";
+        item.innerHTML = `
+            <p><strong>From:</strong> ${req.senderId}</p>
+            <p><strong>Project:</strong> ${req.projectId}</p>
+            <button onclick="acceptRequest('${req.id}', '${req.projectId}', '${req.senderId}')">
+                Accept & Chat
+            </button>
+        `;
+        container.appendChild(item);
+    });
+}
+
+// Accept request and open chat
+window.acceptRequest = async function (requestId, projectId, senderId) {
+    try {
+        await acceptCollaborationRequest(requestId, projectId, senderId);
+
+        // Save sender info for chat context
+        localStorage.setItem("ChatWithUserId", senderId);
+        localStorage.setItem("ChatProjectId", projectId);
+
+        // Navigate to search.html where chat is implemented
+        window.location.href = "search.html";
+    } catch (error) {
+        console.error("Error accepting request:", error);
+        alert("Failed to accept request.");
+    }
+};
+
+window.addEventListener("DOMContentLoaded", () => {
+    updateProfileDisplay();
+    loadCollabRequests(); // also add this if you want collaboration section to load
+});
+
