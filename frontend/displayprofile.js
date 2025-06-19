@@ -15,8 +15,14 @@ export async function updateProfileDisplay() {
         if (userDoc.exists()) {
             const userData = userDoc.data();
             document.getElementById("name").textContent = userData.name || "No name available";
-            document.getElementById("githublink").href = userData.github || "#";  
-            document.getElementById("githublink").textContent = userData.github || "GitHub Profile"; 
+            const githubLink = document.getElementById("githublink");
+            if (userData.github) {
+                githubLink.href = userData.github;
+                githubLink.textContent = userData.github;
+            } else {
+                githubLink.href = "#";
+                githubLink.textContent = "GitHub Profile";
+            }
 
             const skillsList = document.getElementById("skills-list");
             skillsList.innerHTML = "";
@@ -27,7 +33,7 @@ export async function updateProfileDisplay() {
                 skillsList.appendChild(skillElement);
             });
 
-            displayProjects();
+            displayProjects(userId);
         } else {
             console.log("No such user document!");
         }
@@ -36,7 +42,7 @@ export async function updateProfileDisplay() {
     }
 }
 
-async function displayProjects() {
+async function displayProjects(userId) {
     try {
         const projectsList = document.getElementById("projects-list");
         projectsList.innerHTML = "";
@@ -44,15 +50,18 @@ async function displayProjects() {
         const projectsCollection = collection(db, "Project");
         const projectsSnapshot = await getDocs(projectsCollection);
 
-        projectsSnapshot.forEach(doc => {
-            const projectData = doc.data();
+        projectsSnapshot.forEach(docSnap => {
+            const projectData = docSnap.data();
 
-            const projectButton = document.createElement("button");
-            projectButton.textContent = projectData.name;
-            projectButton.classList.add("project-button");
-            projectButton.onclick = () => showProjectDetails(projectData);
+            if (projectData.ownerId === userId) {
+                projectData.id = docSnap.id; 
 
-            projectsList.appendChild(projectButton);
+                const projectButton = document.createElement("button");
+                projectButton.textContent = projectData.name;
+                projectButton.classList.add("project-button");
+                projectButton.onclick = () => showProjectDetails(projectData);
+                projectsList.appendChild(projectButton);
+            }
         });
     } catch (error) {
         console.error("Error fetching projects:", error);
@@ -61,7 +70,7 @@ async function displayProjects() {
 
 function showProjectDetails(project) {
     const projectDetailsDiv = document.getElementById("project-details");
-    
+
     projectDetailsDiv.innerHTML = `
         <h3>${project.name}</h3>
         <p><strong>Description:</strong> ${project.description}</p>
@@ -71,6 +80,4 @@ function showProjectDetails(project) {
         </button>
     `;
 }
-
 updateProfileDisplay();
-
