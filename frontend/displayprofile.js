@@ -1,6 +1,6 @@
-import { auth, db } from "../backend/env.js";
+import { auth, db } from "./env.js";
 import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
-import { getCollaborationRequests, acceptCollaborationRequest } from "../backend/collaboration.js";
+import { getCollaborationRequests, acceptCollaborationRequest } from "./collaboration.js";
 
 
 export async function updateProfileDisplay() {
