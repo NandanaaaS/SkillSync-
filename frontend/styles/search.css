@@ -71,6 +71,7 @@ input, select
 .search-btn:hover 
 {
     background: #008fb3;
+    box-shadow: 0 0 15px white;
 }
 
 .profile-card 
@@ -85,6 +86,7 @@ input, select
     opacity: 0;
     transform: translateX(50px);
     transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+    /*justify-content: space-around;*/
 }
 .profile-card.show 
 {
@@ -115,7 +117,7 @@ input, select
     justify-content: space-between;
     margin-top: 10px;
 }
-.nav-btn, .collab-btn, .chat-btn 
+.nav-btn,.chat-btn 
 {
     background: #00c2ff;
     color: white;
@@ -126,9 +128,14 @@ input, select
     cursor: pointer;
     font-weight: bold;
 }
+.nav-btn
+{
+    margin-left: 10px;
+}
 .nav-btn:hover, .collab-btn:hover, .chat-btn:hover 
 {
     background: #008fb3;
+    box-shadow: 0 0 15px white;
 }
 /* Chat Box */
 .chat-container 
@@ -163,7 +170,7 @@ input, select
     gap: 8px;
 }
 .message
-    {
+{
     max-width: 75%;
     padding: 12px;
     border-radius: 12px;
@@ -285,6 +292,7 @@ input, select
 .logout-btn:hover 
 {
     background: #cc0000;
+    box-shadow: 0 0 15px white;
 } 
 .close-chat-btn 
 {

@@ -76,6 +76,8 @@ body
 .logout-btn:hover 
 {
     background: #cc0000;
+    box-shadow: 0 0 15px white;
+    transform: scale(1.03);
 }
 
                                         /* Main Container */
