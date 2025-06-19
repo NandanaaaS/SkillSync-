@@ -381,30 +381,52 @@
             </div>
         </div>
     </div>
+        <script type="module">
+    import { db } from "../backend/env.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
 
-    <script>
-        function showChat() {
+    function showChat() {
         document.getElementById("chat-container").style.display = "block";
     }
 
     function toggleChat() {
         const chatContainer = document.getElementById("chat-container");
-        chatContainer.style.display = (chatContainer.style.display === "none" || chatContainer.style.display === "") 
-            ? "block" 
-            : "none";
+        chatContainer.style.display =
+            chatContainer.style.display === "none" || chatContainer.style.display === ""
+                ? "block"
+                : "none";
     }
 
-    // 👇 Auto open chat if redirected from dashboard
-    window.onload = function () {
+    async function fetchChatUserDetails() {
         const chatUserId = localStorage.getItem("ChatWithUserId");
         const projectId = localStorage.getItem("ChatProjectId");
 
         if (chatUserId && projectId) {
-            // You can use the ID to load messages here if needed
-            document.getElementById("chat-user-name").textContent = chatUserId;
-            showChat();
+            try {
+                const userRef = doc(db, "users", chatUserId);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    document.getElementById("chat-user-name").textContent = userSnap.data().name;
+                } else {
+                    document.getElementById("chat-user-name").textContent = "Unknown User";
+                }
+
+                showChat();
+
+                // ✅ Optionally load chat messages here:
+                // await loadMessages(chatUserId, projectId);
+
+                // ✅ Clear after use
+                localStorage.removeItem("ChatWithUserId");
+                localStorage.removeItem("ChatProjectId");
+            } catch (error) {
+                console.error("Error loading chat user details:", error);
+            }
         }
-    };
-    </script>
+    }
+
+    window.onload = fetchChatUserDetails;
+</script>
 </body>
 </html>

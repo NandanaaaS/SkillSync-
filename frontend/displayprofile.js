@@ -101,20 +101,34 @@ async function loadCollabRequests() {
         return;
     }
 
-    requests.forEach(req => {
+    requests.forEach(async (req) => {
+    try {
+        // Fetch sender name
+        const senderRef = doc(db, "users", req.senderId);
+        const senderSnap = await getDoc(senderRef);
+        const senderName = senderSnap.exists() ? senderSnap.data().name : "Unknown User";
+
+        // Fetch project name
+        const projectRef = doc(db, "Project", req.projectId);
+        const projectSnap = await getDoc(projectRef);
+        const projectName = projectSnap.exists() ? projectSnap.data().name : "Unknown Project";
+
+        // Create request item
         const item = document.createElement("div");
         item.className = "request-item";
         item.innerHTML = `
-            <p><strong>From:</strong> ${req.senderId}</p>
-            <p><strong>Project:</strong> ${req.projectId}</p>
+            <p><strong>From:</strong> ${senderName}</p>
+            <p><strong>Project:</strong> ${projectName}</p>
             <button onclick="acceptRequest('${req.id}', '${req.projectId}', '${req.senderId}')">
                 Accept & Chat
             </button>
         `;
         container.appendChild(item);
-    });
+    } catch (err) {
+        console.error("Failed to fetch sender/project info:", err);
+    }
+});
 }
-
 // Accept request and open chat
 window.acceptRequest = async function (requestId, projectId, senderId) {
     try {
