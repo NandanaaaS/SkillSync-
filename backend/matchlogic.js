@@ -187,6 +187,6 @@ async function sendMessage() {
 window.searchUsers = searchUsers;
 window.nextUser = () => { currentIndex = (currentIndex + 1) % users.length; displayUser(); };
 window.prevUser = () => { currentIndex = (currentIndex - 1 + users.length) % users.length; displayUser(); };
-window.sendCollabRequest = () => alert(`Collab request sent to ${users[currentIndex].name}!`);
+window.sendCollabRequest = () => alert("Collab request sent to ${users[currentIndex].name}!");
 window.sendMessage = sendMessage;
 window.showChat = showChat;
