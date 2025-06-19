@@ -110,19 +110,32 @@ function displayUser() {
 
 function showChat() {
   const chatContainer = document.getElementById("chat-container");
-  chatContainer.style.display = chatContainer.style.display === "none" ? "block" : "none";
-  if (chatContainer.style.display === "block") {
+  chatContainer.style.display = "block";
+
+  // Delay until user is loaded
+  if (!currentUserId) {
+    console.warn("Waiting for auth...");
+    const interval = setInterval(() => {
+      if (currentUserId) {
+        clearInterval(interval);
+        openChat(users[currentIndex].id);
+      }
+    }, 100);
+  } else {
     openChat(users[currentIndex].id);
   }
 }
 
+
+
 async function openChat(matchedUserId) {
-  if (!currentUserId) return;
+  if (!currentUserId || !matchedUserId) return;
 
   const chatId = [currentUserId, matchedUserId].sort().join("_");
-  currentChatId = chatId;
 
-  document.getElementById("chat-box").innerHTML = "";
+  // 🚨 Fix here: reset old chat
+  if (unsubscribeMessages) unsubscribeMessages();
+  currentChatId = chatId;
 
   const chatRef = doc(db, "chats", chatId);
   const chatSnap = await getDoc(chatRef);
@@ -131,8 +144,10 @@ async function openChat(matchedUserId) {
     await setDoc(chatRef, { messages: [] });
   }
 
+  document.getElementById("chat-box").innerHTML = ""; // clear old
   listenForMessages(chatRef);
 }
+
 
 function listenForMessages(chatRef) {
   if (unsubscribeMessages) unsubscribeMessages();
@@ -185,8 +200,42 @@ async function sendMessage() {
 }
 
 window.searchUsers = searchUsers;
-window.nextUser = () => { currentIndex = (currentIndex + 1) % users.length; displayUser(); };
-window.prevUser = () => { currentIndex = (currentIndex - 1 + users.length) % users.length; displayUser(); };
+window.nextUser = () => {
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+    unsubscribeMessages = null;
+  }
+  currentChatId = null;
+  document.getElementById("chat-container").style.display = "none";
+  currentIndex = (currentIndex + 1) % users.length;
+  displayUser();
+};
+
+window.prevUser = () => {
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+    unsubscribeMessages = null;
+  }
+  currentChatId = null;
+  document.getElementById("chat-container").style.display = "none";
+  currentIndex = (currentIndex - 1 + users.length) % users.length;
+  displayUser();
+};
+
 window.sendCollabRequest = () => alert("Collab request sent to ${users[currentIndex].name}!");
 window.sendMessage = sendMessage;
 window.showChat = showChat;
+window.toggleChat = () => {
+  const chatContainer = document.getElementById("chat-container");
+  chatContainer.style.display =
+    chatContainer.style.display === "none" || chatContainer.style.display === ""
+      ? "block"
+      : "none";
+
+  // Stop listening when chat is closed
+  if (chatContainer.style.display === "none" && unsubscribeMessages) {
+    unsubscribeMessages();
+    unsubscribeMessages = null;
+    currentChatId = null;
+  }
+};
